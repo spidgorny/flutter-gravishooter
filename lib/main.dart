@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Gravi-Shooter'),
     );
   }
 }
@@ -32,35 +32,55 @@ class _MyHomePageState extends State<MyHomePage> {
   AudioCache audioCache = new AudioCache();
   AudioPlayer player;
   double prevZ = 0;
+  String selectedGunSound = '40_smith_wesson_single-mike-koenig.mp3';
+  var zOrientation = 0.0;
+  var playStartTime = DateTime.now();
 
   void initState() {
     super.initState();
+
     accelerometerEvents.listen((AccelerometerEvent event) {
-      //print(event);
+      zOrientation = event.x;
     });
 
-    gyroscopeEvents.listen((GyroscopeEvent event) {
-      //print(event);
-      setState(() {
-        _counter = event.z;
-      });
-      double zDiff = event.z - prevZ;
-      if (zDiff > 5) {
-        this._incrementCounter(zDiff);
+    gyroscopeEvents.listen(gyroEvent);
+  }
+
+  void gyroEvent(GyroscopeEvent event) {
+    //print(event);
+    double zDiff = event.z - prevZ;
+    if (zOrientation > 16) {
+      print("*** " +
+          zOrientation.toStringAsFixed(2) +
+          "\t" +
+          zDiff.toStringAsFixed(2));
+      this._incrementCounter(zDiff);
+    } else {
+      if (zDiff.toStringAsFixed(2) != '0.00' &&
+          zDiff.toStringAsFixed(2) != '-0.00') {
+        print(
+            zOrientation.toStringAsFixed(2) + "\t" + zDiff.toStringAsFixed(2));
       }
-      prevZ = event.z;
+    }
+    setState(() {
+      _counter = zDiff;
     });
+    prevZ = event.z;
   }
 
   void _incrementCounter(double gyroZ) async {
-//    if (player == null) {
-    print('Play: ' + gyroZ.toString());
-    player = await audioCache.play('40_smith_wesson_single-mike-koenig.mp3');
-    player.completionHandler = () {
-      print('Completed');
-      player = null;
-    };
-//    }
+    var shootTimeDiff = DateTime.now().difference(playStartTime).inMilliseconds;
+    if (shootTimeDiff < 500) {
+      print('Skip double shooting');
+    } else {
+      print('Play: ' + gyroZ.toString());
+      player = await audioCache.play(selectedGunSound);
+      playStartTime = DateTime.now();
+      player.completionHandler = () {
+        print('Completed');
+        player = null;
+      };
+    }
   }
 
   @override
@@ -74,24 +94,51 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: Column(
+        child: SingleChildScrollView(
+            child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            buildGunButton('assets/GLOCK_17_Gen_4_Pistol_MOD_45160305.png',
+                '40_smith_wesson_single-mike-koenig.mp3'),
+            buildGunButton('assets/Trench_Shotgun_win12_800.jpg',
+                'Winchester12-RA_The_Sun_God-1722751268.mp3'),
+            buildGunButton('assets/MP5K_Submachine_Gun_(7414624602).jpg',
+                'MP5_SMG-GunGuru-703432894.mp3'),
             Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
+              _counter.toStringAsFixed(2),
               style: Theme.of(context).textTheme.display1,
             ),
           ],
-        ),
+        )),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => {},
+        onPressed: () {
+          this._incrementCounter(0);
+        },
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+
+  Padding buildGunButton(picture, sound) {
+    var isSelected = selectedGunSound == sound;
+    return Padding(
+      padding: const EdgeInsets.all(28.0),
+      child: GestureDetector(
+        child: Container(
+            decoration: BoxDecoration(
+              border: isSelected
+                  ? Border.all(color: Colors.black, width: 5)
+                  : Border.all(color: Colors.white, width: 5),
+              borderRadius: BorderRadius.all(Radius.circular(5)),
+              color: Colors.redAccent,
+            ),
+            child: Image.asset(picture)),
+        onTap: () {
+          this.selectedGunSound = sound;
+        },
+      ),
     );
   }
 }

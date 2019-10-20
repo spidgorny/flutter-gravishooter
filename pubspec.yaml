@@ -26,6 +26,11 @@ dependencies:
   audioplayers: ^0.7.8
   sensors: ^0.4.0+1
 
+#  The Android Gradle plugin supports only Kotlin Gradle plugin version 1.2.51 and higher. Project 'awareframework_core' is using version 1.2.30.
+#  awareframework_significantmotion: ^0.0.4
+#  awareframework_core: ^0.1.1
+#  https://pub.dev/packages/expo_sensors
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
