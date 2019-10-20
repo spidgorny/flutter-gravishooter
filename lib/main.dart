@@ -41,6 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     accelerometerEvents.listen((AccelerometerEvent event) {
       zOrientation = event.x;
+      print(event);
     });
 
     gyroscopeEvents.listen(gyroEvent);
@@ -49,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void gyroEvent(GyroscopeEvent event) {
     //print(event);
     double zDiff = event.z - prevZ;
-    if (zOrientation > 16) {
+    if (zOrientation > 11 && zDiff.abs() > 4) {
       print("*** " +
           zOrientation.toStringAsFixed(2) +
           "\t" +
@@ -58,8 +59,8 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       if (zDiff.toStringAsFixed(2) != '0.00' &&
           zDiff.toStringAsFixed(2) != '-0.00') {
-        print(
-            zOrientation.toStringAsFixed(2) + "\t" + zDiff.toStringAsFixed(2));
+//        print(
+//            zOrientation.toStringAsFixed(2) + "\t" + zDiff.toStringAsFixed(2));
       }
     }
     setState(() {
@@ -70,7 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _incrementCounter(double gyroZ) async {
     var shootTimeDiff = DateTime.now().difference(playStartTime).inMilliseconds;
-    if (shootTimeDiff < 500) {
+    if (shootTimeDiff < 300) {
       print('Skip double shooting');
     } else {
       print('Play: ' + gyroZ.toString());
@@ -104,6 +105,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 'Winchester12-RA_The_Sun_God-1722751268.mp3'),
             buildGunButton('assets/MP5K_Submachine_Gun_(7414624602).jpg',
                 'MP5_SMG-GunGuru-703432894.mp3'),
+            buildGunButton('assets/pvw59324.gif',
+                '8d82b5_Star_Wars_Laser_Sound_Effect.mp3'),
             Text(
               _counter.toStringAsFixed(2),
               style: Theme.of(context).textTheme.display1,
@@ -124,15 +127,14 @@ class _MyHomePageState extends State<MyHomePage> {
   Padding buildGunButton(picture, sound) {
     var isSelected = selectedGunSound == sound;
     return Padding(
-      padding: const EdgeInsets.all(28.0),
+      padding: const EdgeInsets.all(8.0),
       child: GestureDetector(
         child: Container(
             decoration: BoxDecoration(
               border: isSelected
                   ? Border.all(color: Colors.black, width: 5)
-                  : Border.all(color: Colors.white, width: 5),
+                  : Border.all(color: Colors.grey.shade50, width: 5),
               borderRadius: BorderRadius.all(Radius.circular(5)),
-              color: Colors.redAccent,
             ),
             child: Image.asset(picture)),
         onTap: () {
